@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Analyst</title>
+<meta name="description" content="Analista de apostas esportivas com odds Bet365 e Superbet">
+<meta name="theme-color" content="#0f0f0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Analyst">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f0f;
+  --card:#1a1a1a;
+  --card2:#222;
+  --line:#2a2a2a;
+  --line2:#333;
+  --text:#fff;
+  --muted:#888;
+  --dim:#555;
+  --red:#e8192c;
+  --green:#00c853;
+  --yellow:#ffc107;
+  --blue:#2196f3;
+  --purple:#9c27b0;
+  --orange:#ff6d00;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;-webkit-font-smoothing:antialiased;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;background:var(--bg);padding-top:env(safe-area-inset-top,0);padding-bottom:env(safe-area-inset-bottom,0)}
+
+/* ── TOP BAR ── */
+.topbar{
+  background:var(--bg);
+  padding:14px 16px 10px;
+  display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+  border-bottom:1px solid var(--line);
+}
+.topbar-logo{
+  font-size:20px;font-weight:900;letter-spacing:-0.5px;
+  background:linear-gradient(135deg,var(--red),#ff6b6b);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  flex:1;
+}
+.topbar-icon{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--card);border:1px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;flex-shrink:0;
+}
+
+/* ── PANELS ── */
+.pnl{display:none;flex:1;overflow:hidden;flex-direction:column}
+.pnl.on{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── SECTION HEADER ── */
+.sec-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 16px 10px;
+}
+.sec-title{
+  font-size:15px;font-weight:800;letter-spacing:.3px;
+  display:flex;align-items:center;gap:8px;
+}
+.sec-more{color:var(--red);font-size:13px;font-weight:600}
+
+/* ── CHAT ── */
+#msgs{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px}
+#msgs::-webkit-scrollbar{display:none}
+
+.row{display:flex}
+.row.me{justify-content:flex-end}
+.bub{max-width:78%;padding:10px 14px;font-size:14px;line-height:1.6;border-radius:18px}
+.bub.bot{background:var(--card);border:1px solid var(--line2);border-bottom-left-radius:4px;color:#ddd}
+.bub.me{background:var(--red);border-bottom-right-radius:4px;color:#fff}
+.bub b,.bub strong{color:var(--red);font-weight:700}
+.bub.me b,.bub.me strong{color:#fff}
+
+.typing{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:1px solid var(--line2);border-radius:18px;border-bottom-left-radius:4px;font-size:13px;color:var(--muted)}
+.dots{display:flex;gap:4px}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+
+/* ── INPUT ── */
+.inputbar{background:var(--bg);border-top:1px solid var(--line);padding:10px 12px;flex-shrink:0}
+.inputrow{display:flex;gap:8px;align-items:flex-end}
+textarea#inp{
+  flex:1;min-height:42px;max-height:100px;
+  background:var(--card);border:1px solid var(--line2);border-radius:22px;
+  color:#fff;padding:11px 16px;font-size:14px;font-family:'Inter',sans-serif;
+  line-height:1.4;resize:none;outline:none;transition:border-color .15s;
+}
+textarea#inp:focus{border-color:var(--red)}
+textarea#inp::placeholder{color:var(--dim)}
+#go{
+  width:42px;height:42px;border-radius:50%;border:none;
+  background:var(--red);color:#fff;font-size:18px;
+  cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  transition:transform .1s,opacity .15s;
+}
+#go:disabled{opacity:.3;cursor:not-allowed}
+#go:not(:disabled):active{transform:scale(.9)}
+
+/* ── MATCH CARD (estilo Superbet) ── */
+.match-card{
+  background:var(--card);
+  border-radius:14px;
+  margin:0 12px 10px;
+  overflow:hidden;
+  border:1px solid var(--line2);
+}
+.match-card-top{
+  padding:10px 14px 6px;
+  display:flex;align-items:center;gap:6px;
+  border-bottom:1px solid var(--line);
+}
+.match-liga{font-size:11.5px;color:var(--muted);flex:1}
+.match-hora{font-size:11.5px;color:var(--muted);font-weight:500}
+.match-cat{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px}
+
+.match-body{padding:14px}
+.match-teams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.team{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.team-icon{width:44px;height:44px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:22px}
+.team-name{font-size:12px;font-weight:700;text-align:center;line-height:1.3;color:#eee}
+.match-vs{display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.vs-text{font-size:11px;color:var(--muted);font-weight:600}
+.vs-score{font-size:26px;font-weight:900;color:#fff;letter-spacing:2px;font-variant-numeric:tabular-nums}
+
+/* PICK PRINCIPAL */
+.match-pick{
+  background:rgba(232,25,44,.08);
+  border:1px solid rgba(232,25,44,.2);
+  border-radius:10px;
+  padding:11px 13px;
+  margin-bottom:10px;
+}
+.pick-mkt{font-size:11px;color:var(--muted);margin-bottom:4px}
+.pick-val{font-size:15px;font-weight:700;color:#fff;margin-bottom:10px}
+
+/* ODDS BOXES */
+.odds-row{display:flex;gap:6px}
+.odd-box{flex:1;border-radius:9px;padding:8px 10px;text-align:center}
+.odd-b{background:#0d2016;border:1px solid #1a4d2e}
+.odd-b .onm{color:#00c853;font-size:9px;font-weight:700;margin-bottom:4px}
+.odd-b .ov{color:#00c853;font-size:20px;font-weight:900}
+.odd-s{background:#1a0d2e;border:1px solid #3d1a6b}
+.odd-s .onm{color:#ce93d8;font-size:9px;font-weight:700;margin-bottom:4px}
+.odd-s .ov{color:#ce93d8;font-size:20px;font-weight:900}
+.odd-r{background:#0d1a0d;border:1px solid #1a3a1a}
+.odd-r .onm{color:var(--muted);font-size:9px;font-weight:600;margin-bottom:4px}
+.odd-r .ov{color:var(--green);font-size:20px;font-weight:900}
+.odd-r .osub{color:#4dbd7a;font-size:9px;margin-top:3px}
+
+/* SUGESTÃO */
+.sug{display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(255,193,7,.06);border:1px solid rgba(255,193,7,.15);border-radius:8px;margin-top:8px}
+.sug-icon{font-size:14px;flex-shrink:0}
+.sug-text{font-size:12px;color:var(--yellow)}
+
+/* CONFIANÇA */
+.conf-row{display:flex;align-items:center;gap:8px;margin:10px 0}
+.cstars{font-size:12px}
+.cpill{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+
+/* TOGGLE ANALISE */
+.tog-btn{
+  width:100%;background:var(--card2);border:1px solid var(--line2);
+  color:var(--muted);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;
+  border-radius:9px;padding:9px;cursor:pointer;transition:all .15s;
+}
+.tog-btn:hover,.tog-btn.open{border-color:var(--blue);color:var(--blue);background:rgba(33,150,243,.06)}
+
+.analise-box{display:none;margin-top:10px;padding:12px;background:rgba(255,255,255,.03);border-radius:9px;border:1px solid var(--line)}
+.analise-box.open{display:block}
+.a-text{font-size:12.5px;color:#aaa;line-height:1.7}
+.a-risco{margin-top:8px;padding:8px 10px;background:rgba(232,25,44,.06);border-left:2px solid var(--red);font-size:12px;color:#e88;line-height:1.6}
+
+/* ── MULTIPLAS ── */
+.mult-card{
+  background:var(--card);border-radius:14px;
+  margin:0 12px 10px;
+  border:1px solid var(--line2);
+  overflow:hidden;
+}
+.mult-hd{
+  width:100%;background:transparent;border:none;
+  padding:13px 14px;cursor:pointer;font-family:'Inter',sans-serif;
+  display:flex;align-items:center;gap:10px;text-align:left;
+}
+.mult-emoji{font-size:24px}
+.mult-info{flex:1}
+.mult-name{font-size:14px;font-weight:800;color:#fff;margin-bottom:2px}
+.mult-sub{font-size:11.5px;color:var(--muted)}
+.mult-sub b{font-weight:700}
+.mult-risk{font-size:9.5px;font-weight:800;padding:3px 9px;border-radius:9px}
+.mult-arr{color:var(--dim);font-size:13px;margin-left:4px;transition:transform .2s}
+.mult-arr.open{transform:rotate(180deg)}
+.mult-body{display:none;border-top:1px solid var(--line);padding:12px 14px}
+.mult-body.open{display:block}
+.mult-pick-row{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.mult-pick-row:last-child{border-bottom:none}
+.mult-pick-j{font-size:11px;color:var(--muted);margin-bottom:2px}
+.mult-pick-p{font-size:13px;font-weight:600;color:#ddd}
+.mult-an{margin-top:10px;font-size:12.5px;color:var(--muted);line-height:1.65;padding:10px;background:rgba(255,255,255,.03);border-radius:8px}
+
+/* BANCA */
+.banca-card{
+  background:rgba(33,150,243,.07);
+  border:1px solid rgba(33,150,243,.18);
+  border-radius:12px;
+  margin:0 12px 16px;
+  padding:12px 14px;
+  display:flex;gap:10px;align-items:flex-start;
+  font-size:12.5px;color:#90caf9;
+}
+
+/* ── AO VIVO ── */
+.live-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px}
+.live-tit{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.live-dot{width:9px;height:9px;border-radius:50%;background:var(--red);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(232,25,44,.5)}60%{opacity:.7;box-shadow:0 0 0 7px transparent}}
+.refr{background:transparent;border:1px solid var(--line2);color:var(--muted);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:12px;font-family:'Inter',sans-serif}
+
+.jcard{background:var(--card);border-radius:14px;margin:0 12px 10px;border:1px solid var(--line2);overflow:hidden}
+.jhd-btn{width:100%;background:transparent;border:none;padding:13px 14px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif}
+.jtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.jliga-txt{font-size:11px;color:var(--muted)}
+.jmin-badge{background:rgba(232,25,44,.15);color:var(--red);border:1px solid rgba(232,25,44,.3);border-radius:6px;padding:2px 8px;font-size:10.5px;font-weight:700}
+.jteams{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.jteam{flex:1}
+.jteam-name{font-size:13px;font-weight:700;color:#fff;text-align:center;line-height:1.3}
+.jplacar{font-size:28px;font-weight:900;color:#fff;letter-spacing:3px;text-align:center;font-variant-numeric:tabular-nums}
+.jsit{font-size:12px;color:var(--muted);line-height:1.55;text-align:left}
+.jalert{margin-top:8px;padding:7px 10px;background:rgba(255,109,0,.07);border-left:2px solid var(--orange);border-radius:0 8px 8px 0;color:#ffa040;font-size:12px;text-align:left}
+
+.jpicks-wrap{display:none;border-top:1px solid var(--line);padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.jpicks-wrap{display:none}
+.jpicks-wrap.open{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding:10px 12px}
+
+.lpick{background:var(--card2);border-radius:10px;padding:12px;border:1px solid var(--line2)}
+.lurg-row{display:flex;align-items:center;gap:7px;margin-bottom:8px;flex-wrap:wrap}
+.lurg{font-size:9.5px;font-weight:800;padding:3px 9px;border-radius:7px}
+.lmkt{font-size:11px;color:var(--muted)}
+.lwin{font-size:10px;color:var(--dim);margin-left:auto}
+.lpick-val{font-size:14.5px;font-weight:700;color:#fff;margin-bottom:10px}
+.lan{font-size:12.5px;color:#999;line-height:1.65;padding:9px;background:rgba(255,255,255,.03);border-radius:8px}
+.lrisk{margin-top:7px;padding:7px 10px;background:rgba(232,25,44,.06);border-left:2px solid rgba(232,25,44,.4);font-size:12px;color:#e88}
+
+/* ── HISTÓRICO ── */
+.hcard{background:var(--card);border-radius:14px;margin:0 12px 10px;border:1px solid var(--line2);overflow:hidden}
+.hcard-btn{width:100%;background:transparent;border:none;padding:14px;cursor:pointer;text-align:left;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:12px}
+.hcard-ico{width:40px;height:40px;border-radius:11px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.hcard-lbl{font-size:14px;font-weight:700;color:#fff}
+.hcard-sub{font-size:11.5px;color:var(--muted);margin-top:2px}
+.hcard-body{display:none}
+.hcard-body.open{display:block}
+
+/* ── BOTTOM NAV ── */
+.botnav{
+  background:var(--bg);
+  border-top:1px solid var(--line);
+  display:flex;
+  flex-shrink:0;
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.bnav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:10px 0;background:transparent;border:none;cursor:pointer;
+  color:var(--dim);font-family:'Inter',sans-serif;font-size:10px;font-weight:600;
+  transition:color .15s;
+}
+.bnav-btn.on{color:var(--red)}
+.bnav-icon{font-size:22px;line-height:1}
+.bnav-badge{
+  position:absolute;top:-4px;right:-4px;
+  background:var(--red);color:#fff;
+  font-size:8px;font-weight:800;
+  padding:1px 4px;border-radius:8px;
+  min-width:14px;text-align:center;
+}
+.bnav-icon-wrap{position:relative;display:inline-block}
+
+/* ── STATE ── */
+.state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--muted);text-align:center;padding:40px}
+.state-em{font-size:52px;opacity:.3}
+.state-t{font-size:16px;font-weight:700;color:#777}
+.state-s{font-size:13px}
+.retry{background:var(--red);color:#fff;border:none;border-radius:10px;padding:10px 24px;cursor:pointer;font-weight:700;font-size:13px;font-family:'Inter',sans-serif}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">ANALYST</div>
+    <div class="topbar-icon">🔔</div>
+    <div class="topbar-icon">⚙️</div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="pnl on" id="pnl-chat">
+    <div id="msgs">
+      <div class="row">
+        <div class="bub bot">
+          Fala! 🔥 Fala do jeito que quiser:<br><br>
+          <b>• "o que tem de bom?"</b> — varro tudo e mando as melhores<br>
+          <b>• "picks de amanhã"</b> — dia específico<br>
+          <b>• "ao vivo"</b> — abre jogos em andamento<br><br>
+          Analiso cartão, escanteio, jogador, gol, tudo! 🎯
+        </div>
+      </div>
+    </div>
+    <div class="inputbar">
+      <div class="inputrow">
+        <textarea id="inp" rows="1" placeholder='Ex: "o que tem de bom?", "picks do sábado"...'></textarea>
+        <button id="go">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AO VIVO PANEL -->
+  <div class="pnl" id="pnl-live">
+    <div class="scroll" id="live-scroll">
+      <div class="state">
+        <div class="state-em">📡</div>
+        <div class="state-t">Buscar jogos ao vivo</div>
+        <div class="state-s">Veja o que tá rolando agora</div>
+        <button class="retry" id="live-load-btn">Carregar ao vivo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTÓRICO PANEL -->
+  <div class="pnl" id="pnl-hist">
+    <div class="scroll" id="hist-scroll">
+      <div class="state" id="hist-empty">
+        <div class="state-em">📂</div>
+        <div class="state-t">Nenhuma análise ainda</div>
+        <div class="state-s">Suas picks aparecem aqui</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="botnav">
+    <button class="bnav-btn on" data-tab="chat">
+      <span class="bnav-icon">💬</span>Chat
+    </button>
+    <button class="bnav-btn" data-tab="live">
+      <span class="bnav-icon-wrap">
+        <span class="bnav-icon">📡</span>
+      </span>
+      Ao Vivo
+    </button>
+    <button class="bnav-btn" data-tab="hist" id="hist-tab-btn">
+      <span class="bnav-icon">📁</span>Histórico
+    </button>
+  </nav>
+</div>
+
+<script>
+const MODEL="claude-sonnet-4-6";
+const histData=[];
+
+/* ── API ── */
+async function api(prompt,search=false,tries=3){
+  for(let t=0;t<tries;t++){
+    try{
+      const r=await fetch("https://apostas-online.vercel.app/api/proxy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({prompt,useSearch:search})});
+      const d=await r.json();
+      if(d.error)throw new Error(d.error);
+      if(!d.text)throw new Error("Resposta vazia");
+      return d.text;
+    }catch(e){if(t===tries-1)throw e;await new Promise(r=>setTimeout(r,1800*(t+1)));}
+  }
+}
+function parseJSON(tx){
+  const c=tx.replace(/```json|```/g,"").trim();
+  try{return JSON.parse(c);}catch{}
+  const bl=(c.match(/\{[\s\S]*\}/g)||[]).sort((a,z)=>z.length-a.length);
+  for(const b of bl){try{return JSON.parse(b);}catch{}}
+  return null;
+}
+function intent(tx){
+  const t=tx.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  if(/ao vivo|live|rolando|agora/.test(t))return"live";
+  const dias={amanha:"amanha",segunda:"segunda",terca:"terca",quarta:"quarta",quinta:"quinta",sexta:"sexta",sabado:"sabado",domingo:"domingo"};
+  for(const[k,v]of Object.entries(dias))if(t.includes(k))return{tipo:"day",d:v};
+  if(/pick|aposta|jogo|bom|boa|manda|tem algo|rola|sugest|analisa|hoje/.test(t))return"full";
+  return"chat";
+}
+function dateOf(ref){
+  const n=new Date();
+  if(!ref||ref==="hoje")return{date:n,lbl:"hoje"};
+  if(ref==="amanha"){const d=new Date(n);d.setDate(d.getDate()+1);return{date:d,lbl:"amanhã"};}
+  const m={segunda:1,terca:2,quarta:3,quinta:4,sexta:5,sabado:6,domingo:0};
+  if(m[ref]!==undefined){const d=new Date(n);const df=(m[ref]-d.getDay()+7)%7||7;d.setDate(d.getDate()+df);return{date:d,lbl:ref};}
+  return{date:n,lbl:"hoje"};
+}
+function fmtd(d){return d.toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});}
+
+/* ── PROMPTS ── */
+const PPICKS=ctx=>`Analista de apostas. Busque jogos de futebol para ${ctx}. Retorne APENAS JSON válido:
+{"resumo":"frase","apostas":[{"jogo":"A vs B","liga":"X","horario":"HH:MM","time_a":"Nome","time_b":"Nome","emoji_a":"🔵","emoji_b":"🔴","categoria":"GOLS|RESULTADO|JOGADOR|CARTÕES|ESCANTEIOS|ESPECIAL","mercado":"nome","pick":"pick específica","odd_bet365":3.5,"odd_superbet":3.6,"valor_sugerido":5,"confianca":3,"analise":"análise 3-4 linhas com forma, confronto direto, motivação e stats do mercado","risco":"risco principal"}],"multiplas":[{"nome":"💣 BOMBA","picks":["p1","p2","p3","p4"],"jogos":["J1","J2","J3","J4"],"odd_total":80.0,"risco":"EXTREMO","analise":"motivo"},{"nome":"🔥 SUPER","picks":["p1","p2","p3"],"jogos":["J1","J2","J3"],"odd_total":40.0,"risco":"MUITO ALTO","analise":"motivo"},{"nome":"⚡ TRIO","picks":["p1","p2","p3"],"jogos":["J1","J2","J3"],"odd_total":20.0,"risco":"ALTO","analise":"motivo"}],"dica_banca":"dica"}
+Regras: min 5 picks com categorias variadas, odds numéricas reais buscadas na web (Bet365/Superbet), valor_sugerido: conf5=R$20,4=R$15,3=R$8,2=R$4,1=R$2`;
+
+const PLIVE=`Analista ao vivo. Busque jogos acontecendo AGORA. APENAS JSON:
+{"jogos":[{"jogo":"A vs B","liga":"Liga","minuto":"67'","placar":"1 - 0","time_a":"Nome","time_b":"Nome","emoji_a":"🔵","emoji_b":"🔴","situacao":"análise crítica do momento","alerta":"algo importante ou null","picks":[{"mercado":"m","pick":"pick","odd_bet365":2.1,"odd_superbet":2.05,"valor_sugerido":5,"urgencia":"AGORA|EM BREVE|ESPERAR","janela":"até quando","analise":"por que faz sentido agora","risco":"risco"}]}],"dica":"dica geral"}`;
+
+/* ── CHAT UI ── */
+const $msgs=document.getElementById("msgs");
+const $inp=document.getElementById("inp");
+const $go=document.getElementById("go");
+
+function addBub(html,side="bot"){
+  const row=document.createElement("div");
+  row.className="row"+(side==="me"?" me":"");
+  const b=document.createElement("div");
+  b.className="bub "+side;
+  b.innerHTML=html.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<b>$1</b>");
+  row.appendChild(b);$msgs.appendChild(row);$msgs.scrollTop=$msgs.scrollHeight;
+}
+function showTyping(){
+  const row=document.createElement("div");row.className="row";
+  row.innerHTML=`<div class="typing"><div class="dots"><span></span><span></span><span></span></div>&nbsp;Analisando</div>`;
+  $msgs.appendChild(row);$msgs.scrollTop=$msgs.scrollHeight;
+  const labels=["Buscando jogos","Verificando odds","Montando picks","Quase pronto"];
+  let i=0;const t=setInterval(()=>{const el=row.querySelector(".typing");if(el){const txt=el.childNodes[1];if(txt)txt.textContent="\u00a0"+labels[++i%labels.length];}},1800);
+  return{el:row,stop:()=>clearInterval(t)};
+}
+
+/* ── CAT COLORS ── */
+const CAT_C={GOLS:"#00c853",RESULTADO:"#2196f3",JOGADOR:"#ffc107",CARTÕES:"#e8192c",ESCANTEIOS:"#9c27b0",FALTAS:"#ff6d00",ESPECIAL:"#00bcd4"};
+const CAT_I={GOLS:"🥅",RESULTADO:"⚽",JOGADOR:"👤",CARTÕES:"🟥",ESCANTEIOS:"🚩",FALTAS:"⚡",ESPECIAL:"✨"};
+const CONF_C=["#e8192c","#e8192c","#ff6d00","#ffc107","#00c853","#00e676"];
+const CONF_L=["","Especulativa","Baixa","Média","Alta","Muito Alta"];
+const MULT_C={"EXTREMO":"#e8192c","MUITO ALTO":"#ff6d00","ALTO":"#ffc107"};
+const URG_C={"AGORA":"#e8192c","EM BREVE":"#ff6d00","ESPERAR":"#2196f3"};
+
+/* ── BUILD PICKS ── */
+function buildPicks(d,lbl){
+  const frag=document.createDocumentFragment();
+
+  // header resumo
+  if(lbl||d.resumo){
+    const hd=document.createElement("div");
+    hd.style.cssText="padding:14px 16px 4px";
+    hd.innerHTML=`<div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:4px">${lbl||"Picks"}</div>${d.resumo?`<div style="font-size:12.5px;color:var(--muted);font-style:italic">${d.resumo}</div>`:""}`;
+    frag.appendChild(hd);
+  }
+
+  // apostas
+  (d.apostas||[]).forEach((a,i)=>{
+    const cc=CAT_C[a.categoria]||"#888";
+    const ci=CAT_I[a.categoria]||"🎯";
+    const v=a.valor_sugerido,ob=a.odd_bet365,os=a.odd_superbet;
+    const odd=ob||os;
+    const ret=v&&odd?(v*odd).toFixed(2):null,luc=v&&odd?(v*odd-v).toFixed(2):null;
+    const c=a.confianca||3;
+
+    const card=document.createElement("div");
+    card.className="match-card";
+    card.innerHTML=`
+      <div class="match-card-top">
+        <span class="match-liga">${a.liga||""}</span>
+        <span class="match-hora">${a.horario||""}</span>
+        ${a.categoria?`<span class="match-cat" style="background:${cc}18;color:${cc};border:1px solid ${cc}30">${ci} ${a.categoria}</span>`:""}
+      </div>
+      <div class="match-body">
+        <div class="match-teams">
+          <div class="team">
+            <div class="team-icon">${a.emoji_a||"⚽"}</div>
+            <div class="team-name">${(a.time_a||a.jogo?.split(" vs ")?.[0]||"Time A")}</div>
+          </div>
+          <div class="match-vs">
+            <div class="vs-text">vs</div>
+          </div>
+          <div class="team">
+            <div class="team-icon">${a.emoji_b||"⚽"}</div>
+            <div class="team-name">${(a.time_b||a.jogo?.split(" vs ")?.[1]||"Time B")}</div>
+          </div>
+        </div>
+        <div class="match-pick">
+          <div class="pick-mkt">${a.mercado||""}</div>
+          <div class="pick-val">✅ ${a.pick||""}</div>
+          <div class="odds-row">
+            <div class="odd-box odd-b">
+              <div class="onm">Bet365</div>
+              <div class="ov" style="color:${ob?"#00c853":"#555"}">${ob||"—"}</div>
+            </div>
+            <div class="odd-box odd-s">
+              <div class="onm">Superbet</div>
+              <div class="ov" style="color:${os?"#ce93d8":"#555"}">${os||"—"}</div>
+            </div>
+            ${ret?`<div class="odd-box odd-r"><div class="onm">Se apostar R$${v}</div><div class="ov">R$ ${ret}</div><div class="osub">+R$ ${luc}</div></div>`:""}
+          </div>
+          ${v?`<div class="sug"><span class="sug-icon">💡</span><span class="sug-text">Aposte <strong>R$ ${v}</strong> nessa pick</span></div>`:""}
+        </div>
+        <div class="conf-row">
+          <span class="cstars" style="color:${CONF_C[c]}">${"★".repeat(c)}${"☆".repeat(5-c)}</span>
+          <span class="cpill" style="color:${CONF_C[c]};background:${CONF_C[c]}15;border:1px solid ${CONF_C[c]}30">${CONF_L[c]}</span>
+        </div>
+        <button class="tog-btn" data-i="${i}">▼ Ver análise completa</button>
+        <div class="analise-box" data-a="${i}">
+          ${a.analise?`<div class="a-text">${a.analise}</div>`:""}
+          ${a.risco?`<div class="a-risco">⚠️ ${a.risco}</div>`:""}
+        </div>
+      </div>
+    `;
+    card.querySelector(".tog-btn").addEventListener("click",function(){
+      const ab=card.querySelector(".analise-box");
+      const o=ab.classList.toggle("open");
+      this.classList.toggle("open",o);
+      this.textContent=o?"▲ Fechar análise":"▼ Ver análise completa";
+    });
+    frag.appendChild(card);
+  });
+
+  // multiplas
+  (d.multiplas||[]).forEach((m,i)=>{
+    const cor=MULT_C[m.risco]||"#ffc107";
+    const icons=["💣","🔥","⚡"];
+    const mc=document.createElement("div");
+    mc.className="mult-card";
+    mc.innerHTML=`
+      <button class="mult-hd">
+        <span class="mult-emoji">${icons[i]||"⚡"}</span>
+        <div class="mult-info">
+          <div class="mult-name" style="color:${cor}">${m.nome}</div>
+          <div class="mult-sub">${(m.picks||[]).length} picks · odd <b style="color:#ffc107">~${m.odd_total}</b></div>
+        </div>
+        <span class="mult-risk" style="color:${cor};background:${cor}18;border:1px solid ${cor}30">${m.risco}</span>
+        <span class="mult-arr">▼</span>
+      </button>
+      <div class="mult-body">
+        ${(m.picks||[]).map((p,j)=>`
+          <div class="mult-pick-row">
+            <div>${m.jogos?.[j]?`<div class="mult-pick-j">${m.jogos[j]}</div>`:""}
+            <div class="mult-pick-p">${p}</div></div>
+          </div>`).join("")}
+        ${m.analise?`<div class="mult-an">📊 ${m.analise}</div>`:""}
+      </div>
+    `;
+    mc.querySelector(".mult-hd").addEventListener("click",()=>{
+      const b=mc.querySelector(".mult-body"),o=b.classList.toggle("open");
+      mc.querySelector(".mult-arr").classList.toggle("open",o);
+    });
+    frag.appendChild(mc);
+  });
+
+  if(d.dica_banca){
+    const bc=document.createElement("div");
+    bc.className="banca-card";
+    bc.innerHTML=`<span>💡</span><div><strong style="color:#90caf9">Banca:</strong> ${d.dica_banca}</div>`;
+    frag.appendChild(bc);
+  }
+  return frag;
+}
+
+function addPicksToChat(d,lbl){
+  const row=document.createElement("div");
+  row.className="row";
+  const wrap=document.createElement("div");
+  wrap.style.cssText="width:100%;max-width:100%";
+  wrap.appendChild(buildPicks(d,lbl));
+  row.appendChild(wrap);
+  $msgs.appendChild(row);
+  $msgs.scrollTop=$msgs.scrollHeight;
+}
+
+/* ── SEND ── */
+async function send(){
+  const tx=$inp.value.trim();if(!tx||$go.disabled)return;
+  $inp.value="";$inp.style.height="";
+  addBub(tx,"me");
+  $go.disabled=true;
+  const ld=showTyping();
+  try{
+    const it=intent(tx);
+    if(it==="live"){
+      ld.stop();ld.el.remove();
+      document.querySelector('[data-tab="live"]').click();
+      addBub("📡 Abrindo <b>Ao Vivo</b>!");
+    }else if(it==="full"){
+      const n=new Date(),am=new Date(n);am.setDate(n.getDate()+1);
+      const ctx=`${fmtd(n)} e ${fmtd(am)}. Competições: Brasileirão A/B, Copa do Brasil, Champions/Europa League, Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Libertadores, Sul-Americana`;
+      const r=await api(PPICKS(ctx),true);
+      const dd=parseJSON(r);
+      ld.stop();ld.el.remove();
+      if(dd?.apostas?.length){
+        dd._v=true;
+        const lbl=`Varredura ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}`;
+        addPicksToChat(dd,lbl);addHist(lbl,dd);
+      }else addBub("⚠️ Não consegui agora. Tenta de novo!");
+    }else if(it?.tipo==="day"){
+      const{date,lbl}=dateOf(it.d);
+      const ctx=`${fmtd(date)}. Competições: Brasileirão A/B, Copa do Brasil, Champions/Europa League, Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Libertadores, Sul-Americana`;
+      const r=await api(PPICKS(ctx),true);
+      const dd=parseJSON(r);
+      ld.stop();ld.el.remove();
+      if(dd?.apostas?.length){const lb=`Picks de ${lbl}`;addPicksToChat(dd,lb);addHist(lb,dd);}
+      else addBub("⚠️ Não consegui agora. Tenta de novo!");
+    }else{
+      const r=await api(`Você é Analyst, assistente de apostas em português. Responda curto e direto. Se pedir picks, sugira "o que tem de bom?".\n\n${tx}`,false);
+      ld.stop();ld.el.remove();addBub(r);
+    }
+  }catch(e){ld.stop();ld.el.remove();addBub(`⚠️ ${e.message||"Erro temporário"}. Tenta de novo!`);}
+  finally{$go.disabled=false;$inp.focus();}
+}
+$go.addEventListener("click",send);
+$inp.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
+$inp.addEventListener("input",()=>{$inp.style.height="auto";$inp.style.height=Math.min($inp.scrollHeight,100)+"px";});
+
+/* ── TABS ── */
+const PNLS={chat:document.getElementById("pnl-chat"),live:document.getElementById("pnl-live"),hist:document.getElementById("pnl-hist")};
+let liveReady=false;
+document.querySelectorAll(".bnav-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".bnav-btn").forEach(b=>b.classList.remove("on"));
+    btn.classList.add("on");
+    const tab=btn.dataset.tab;
+    Object.values(PNLS).forEach(p=>p.classList.remove("on"));
+    PNLS[tab].classList.add("on");
+    if(tab==="live"&&!liveReady){liveReady=true;loadLive();}
+  });
+});
+
+/* ── AO VIVO ── */
+const $live=document.getElementById("live-scroll");
+document.getElementById("live-load-btn")?.addEventListener("click",()=>{liveReady=true;loadLive();});
+
+async function loadLive(){
+  $live.innerHTML=`<div class="state"><div class="state-em">📡</div><div class="state-t" style="color:var(--red)">Buscando ao vivo...</div><div class="state-s">Isso leva alguns segundos</div></div>`;
+  try{
+    const ag=new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    const r=await api(`São ${ag} horário de Brasília, ${new Date().toISOString().split("T")[0]}.\n${PLIVE}`,true);
+    const dd=parseJSON(r);
+    if(dd?.jogos?.length)renderLive(dd);
+    else{$live.innerHTML=`<div class="state"><div class="state-em">😴</div><div class="state-t">Nenhum jogo ao vivo</div><button class="retry" id="lr2">🔄 Tentar novamente</button></div>`;document.getElementById("lr2")?.addEventListener("click",loadLive);}
+  }catch(e){
+    $live.innerHTML=`<div class="state"><div class="state-em">😴</div><div class="state-t">Erro ao buscar</div><div class="state-s">${e.message||""}</div><button class="retry" id="lr3">🔄 Tentar novamente</button></div>`;
+    document.getElementById("lr3")?.addEventListener("click",loadLive);
+  }
+}
+
+function renderLive(d){
+  $live.innerHTML="";
+  const hd=document.createElement("div");
+  hd.className="live-hd";
+  hd.innerHTML=`<div class="live-tit"><span class="live-dot"></span>Ao Vivo — ${d.jogos.length} jogo(s)</div><button class="refr" id="refr-btn">🔄 Atualizar</button>`;
+  $live.appendChild(hd);
+  document.getElementById("refr-btn")?.addEventListener("click",loadLive);
+
+  if(d.dica){const dica=document.createElement("div");dica.style.cssText="margin:0 12px 10px;padding:10px 13px;background:var(--card);border-radius:10px;border:1px solid var(--line2);font-size:12.5px;color:var(--muted)";dica.textContent="💡 "+d.dica;$live.appendChild(dica);}
+
+  d.jogos.forEach((j,i)=>{
+    const jc=document.createElement("div");jc.className="jcard";
+    jc.innerHTML=`
+      <div class="jhd-btn" id="jhd${i}" style="cursor:pointer">
+        <div class="jtop"><span class="jliga-txt">${j.liga||""}</span><span class="jmin-badge">${j.minuto||""}</span></div>
+        <div class="jteams">
+          <div class="jteam" style="text-align:center">
+            <div style="font-size:30px;margin-bottom:4px">${j.emoji_a||"⚽"}</div>
+            <div class="jteam-name">${j.time_a||""}</div>
+          </div>
+          <div style="flex-shrink:0;text-align:center">
+            <div class="jplacar">${j.placar||"—"}</div>
+          </div>
+          <div class="jteam" style="text-align:center">
+            <div style="font-size:30px;margin-bottom:4px">${j.emoji_b||"⚽"}</div>
+            <div class="jteam-name">${j.time_b||""}</div>
+          </div>
+        </div>
+        ${j.situacao?`<div class="jsit">${j.situacao}</div>`:""}
+        ${j.alerta?`<div class="jalert">⚠️ ${j.alerta}</div>`:""}
+      </div>
+      <div class="jpicks-wrap" id="jp${i}">
+        ${(j.picks||[]).map(p=>{
+          const uc=URG_C[p.urgencia]||"#555";
+          const v=p.valor_sugerido,ob=p.odd_bet365,os=p.odd_superbet;
+          const odd=ob||os;const ret=v&&odd?(v*odd).toFixed(2):null;
+          return `<div class="lpick" style="border-color:${uc}25">
+            <div class="lurg-row">
+              <span class="lurg" style="color:${uc};background:${uc}15;border:1px solid ${uc}30">${p.urgencia||""}</span>
+              <span class="lmkt">${p.mercado||""}</span>
+              ${p.janela?`<span class="lwin">⏱ ${p.janela}</span>`:""}
+            </div>
+            <div class="lpick-val">✅ ${p.pick||""}</div>
+            <div class="odds-row">
+              <div class="odd-box odd-b"><div class="onm">Bet365</div><div class="ov" style="color:${ob?"#00c853":"#555"}">${ob||"—"}</div></div>
+              <div class="odd-box odd-s"><div class="onm">Superbet</div><div class="ov" style="color:${os?"#ce93d8":"#555"}">${os||"—"}</div></div>
+              ${ret?`<div class="odd-box odd-r"><div class="onm">Se apostar R$${v}</div><div class="ov">R$ ${ret}</div></div>`:""}
+            </div>
+            <div class="lan">${p.analise||""}</div>
+            ${p.risco?`<div class="lrisk">⚠️ ${p.risco}</div>`:""}
+            ${v?`<div class="sug" style="margin-top:7px"><span class="sug-icon">💡</span><span class="sug-text">Aposte <strong>R$ ${v}</strong></span></div>`:""}
+          </div>`;
+        }).join("")}
+      </div>
+    `;
+    document.getElementById(`jhd${i}`,jc)?.addEventListener||0;
+    jc.querySelector(`#jhd${i}`)?.addEventListener("click",()=>jc.querySelector(`#jp${i}`)?.classList.toggle("open"));
+    $live.appendChild(jc);
+  });
+}
+
+/* ── HISTÓRICO ── */
+const $hist=document.getElementById("hist-scroll");
+const $hempty=document.getElementById("hist-empty");
+const $htab=document.getElementById("hist-tab-btn");
+
+function addHist(lbl,d){
+  histData.unshift({lbl,d});
+  $htab.innerHTML=`<span class="bnav-icon">📁</span>Histórico`;
+  $hempty.style.display="none";
+  const hc=document.createElement("div");hc.className="hcard";
+  hc.innerHTML=`
+    <button class="hcard-btn">
+      <div class="hcard-ico">📅</div>
+      <div>
+        <div class="hcard-lbl">${lbl}</div>
+        <div class="hcard-sub">${d.apostas?.length||0} picks</div>
+      </div>
+      <span style="color:var(--dim);font-size:13px;margin-left:auto">▼</span>
+    </button>
+    <div class="hcard-body"></div>
+  `;
+  const body=hc.querySelector(".hcard-body"),arr=hc.querySelector(".hcard-btn span:last-child");
+  hc.querySelector(".hcard-btn").addEventListener("click",()=>{
+    const o=body.classList.toggle("open");arr.textContent=o?"▲":"▼";
+    if(o&&!body.children.length)body.appendChild(buildPicks(d,lbl));
+  });
+  $hist.insertBefore(hc,$hist.firstChild);
+}
+</script>
+
+<script>
+// ── PWA SETUP ────────────────────────────────────────────────────────────────
+
+// Registra o service worker externo (sw.js)
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(reg => {
+        // Quando houver update do GitHub, aplica automaticamente
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              // Nova versão disponível — recarrega silenciosamente
+              newWorker.postMessage({ action: "skipWaiting" });
+              window.location.reload();
+            }
+          });
+        });
+      })
+      .catch(err => console.log("SW erro:", err));
+  });
+
+  // Quando um novo SW assume, recarrega a página
+  navigator.serviceWorker.addEventListener("controllerchange", () => window.location.reload());
+}
+
+// Gera ícones em canvas para apple-touch-icon dinâmico
+(function gerarIcones() {
+  function drawIcon(size) {
+    const c = document.createElement("canvas");
+    c.width = c.height = size;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "#0f0f0f";
+    if (ctx.roundRect) ctx.roundRect(0, 0, size, size, size * 0.22);
+    else ctx.rect(0, 0, size, size);
+    ctx.fill();
+    ctx.fillStyle = "#e8192c";
+    ctx.beginPath();
+    ctx.arc(size / 2, size * 0.42, size * 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.font = `${size * 0.32}px serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("🔥", size / 2, size * 0.42);
+    ctx.fillStyle = "#fff";
+    ctx.font = `bold ${size * 0.12}px Inter,sans-serif`;
+    ctx.fillText("ANALYST", size / 2, size * 0.78);
+    return c.toDataURL("image/png");
+  }
+  // Substitui o apple-touch-icon com ícone gerado
+  const link = document.querySelector('link[rel="apple-touch-icon"]');
+  if (link) link.href = drawIcon(192);
+})();
+
+// Banner de instalação (Android/Chrome)
+let installPrompt = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  installPrompt = e;
+  mostrarBanner();
+});
+
+function mostrarBanner() {
+  if (document.getElementById("inst-banner") || isStandalone()) return;
+  const b = document.createElement("div");
+  b.id = "inst-banner";
+  b.style.cssText = "position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid #333;border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:11px;box-shadow:0 8px 32px rgba(0,0,0,.7);z-index:9999;max-width:340px;width:calc(100% - 32px);animation:slideUp .3s ease";
+  b.innerHTML = `<span style="font-size:26px">🔥</span><div style="flex:1"><div style="font-size:13px;font-weight:700;color:#fff">Instalar Analyst</div><div style="font-size:11px;color:#888;margin-top:1px">Adicionar à tela inicial</div></div><button id="inst-yes" style="background:#e8192c;color:#fff;border:none;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif">Instalar</button><button id="inst-no" style="background:none;color:#666;border:none;font-size:20px;cursor:pointer;padding:0 2px">✕</button>`;
+  document.body.appendChild(b);
+  document.getElementById("inst-yes").onclick = async () => { b.remove(); if (installPrompt) { await installPrompt.prompt(); installPrompt = null; } };
+  document.getElementById("inst-no").onclick = () => b.remove();
+}
+
+// Instrução iOS
+function isIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
+function isStandalone() { return window.matchMedia("(display-mode: standalone)").matches || navigator.standalone; }
+
+function mostrarIOS() {
+  if (document.getElementById("inst-banner") || isStandalone()) return;
+  const b = document.createElement("div");
+  b.id = "inst-banner";
+  b.style.cssText = "position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid #333;border-radius:14px;padding:14px 16px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,.7);max-width:340px;width:calc(100% - 32px);animation:slideUp .3s ease";
+  b.innerHTML = `<div style="display:flex;align-items:center;gap:9px;margin-bottom:10px"><span style="font-size:22px">🔥</span><span style="font-size:13px;font-weight:700;color:#fff">Instalar no iPhone</span><button id="inst-no" style="background:none;color:#666;border:none;font-size:18px;cursor:pointer;margin-left:auto">✕</button></div><div style="font-size:12px;color:#aaa;line-height:1.8">1. Toque em <strong style="color:#fff">Compartilhar ⬆️</strong><br>2. Toque em <strong style="color:#fff">"Adicionar à Tela Inicial"</strong><br>3. Toque em <strong style="color:#fff">Adicionar</strong></div>`;
+  document.body.appendChild(b);
+  document.getElementById("inst-no").onclick = () => b.remove();
+  setTimeout(() => b?.remove(), 15000);
+}
+
+// Botão 📲 no header
+const style = document.createElement("style");
+style.textContent = `@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`;
+document.head.appendChild(style);
+
+if (!isStandalone()) {
+  setTimeout(() => {
+    const btn = document.createElement("div");
+    btn.className = "topbar-icon";
+    btn.innerHTML = "📲";
+    btn.title = "Instalar app";
+    btn.onclick = () => { if (installPrompt) installPrompt.prompt(); else if (isIOS()) mostrarIOS(); else mostrarBanner(); };
+    document.querySelector(".topbar")?.appendChild(btn);
+    if (isIOS()) setTimeout(mostrarIOS, 2500);
+  }, 800);
+}
+</script>
+</body>
+</html>
